@@ -1,15 +1,33 @@
 import Phaser from "phaser";
+import PhaserMatterCollisionPlugin from 'phaser-matter-collision-plugin';
 
-//Generic Phaser configuration
+import { MainScene } from './scenes/MainScene';
+//Phaser configuration
 const config = {
   backgroundColor: '#333333',
   type: Phaser.AUTO,
   height: 512,
   width: 512,
   parent: "survival-game",
-  scene: [],
+  scene: [MainScene],
   scale: {
     zoom: 2
+  },
+  physics: {
+    default: 'matter',
+    matter: {
+      debug: true,
+      gravity: {
+        y: 0
+      }
+    }
+  },
+  plugins: {
+    scene: [{
+      plugin: PhaserMatterCollisionPlugin,
+      key: 'matterCollision',
+      mapping: 'matterCollision'
+    }]
   }
 };
 
