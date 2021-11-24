@@ -37,8 +37,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
 
   }
 
+  get velocity() {
+    return this.body.velocity;
+  }
+
   update() { // 60fps
-    this.anims.play('male_walk', true);
     const speed = 2.5;
     let playerVelocity = new Phaser.Math.Vector2();
     if (this.inputKeys?.left.isDown) {
@@ -55,5 +58,11 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
     playerVelocity.normalize();
     playerVelocity.scale(speed);
     this.setVelocity(playerVelocity.x, playerVelocity.y);
+
+    if (Math.abs(this.velocity.x) > 0.1 || Math.abs(this.velocity.y) > 0.1) {
+      this.anims.play('male_walk', true);
+    } else {
+      this.anims.play('male_idle', true);
+    }
   }
 }
