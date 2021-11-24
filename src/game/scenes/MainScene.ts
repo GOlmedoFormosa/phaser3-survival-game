@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import Player, { IPlayer } from '../actors/Player';
+import Player, { IPlayer, IKeys } from '../actors/Player';
 
 export class MainScene extends Phaser.Scene {
   player?: Phaser.Physics.Matter.Sprite & IPlayer;
@@ -18,7 +18,7 @@ export class MainScene extends Phaser.Scene {
       down: Phaser.Input.Keyboard.KeyCodes.S,
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D
-    });
+    }) as IKeys;
 
   }
 
