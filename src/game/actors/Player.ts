@@ -1,3 +1,6 @@
+import * as MatterJS from 'matter-js';
+import { BodyType } from 'matter';
+
 import maleImg from '../assets/male.png';
 import maleAtlasJson from '../assets/male_atlas.json';
 import maleAnimJson from '../assets/male_anim.json';
@@ -21,7 +24,6 @@ export interface IPlayerParams {
   frame: string
 }
 
-
 export default class Player extends Phaser.Physics.Matter.Sprite implements IPlayer {
   inputKeys?: IKeys;
 
@@ -29,16 +31,22 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
     let { scene, x, y, texture, frame } = data;
     super(scene.matter.world, x, y, texture, frame);
     this.scene.add.existing(this);
+
+    const Matter = (Phaser.Physics.Matter as Record<string, unknown>).Matter as typeof MatterJS;
+    const { Body, Bodies } = Matter;
+    const playerCollider = Bodies.circle(this.x, this.x, 12, { isSensor: false, label: 'playerCollider' });
+    const playerSensor = Bodies.circle(this.x, this.x, 24, { isSensor: true, label: 'playerSensor' });
+    const compoundBody: any = Body.create({
+      parts: [playerCollider, playerSensor],
+      friction: 0.35
+    });
+    this.setExistingBody(compoundBody as BodyType);
   }
 
   static preload(scene: Phaser.Scene) {
     scene.load.atlas('male', maleImg, maleAtlasJson);
     scene.load.animation('male_anim', maleAnimJson);
 
-  }
-
-  get velocity() {
-    return this.body.velocity;
   }
 
   update() { // 60fps
@@ -65,4 +73,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
       this.anims.play('male_idle', true);
     }
   }
+
+  get velocity() {
+    return this.body.velocity;
+  }
 }
+
