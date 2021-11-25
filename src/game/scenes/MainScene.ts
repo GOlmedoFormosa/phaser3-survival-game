@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 import Player, { IPlayer, IKeys } from '../actors/Player';
+import tilesImg from '../assets/RPG Nature Tileset.png';
+import mapJson from '../assets/map.json';
 
 export class MainScene extends Phaser.Scene {
   player?: Phaser.Physics.Matter.Sprite & IPlayer;
@@ -9,9 +11,16 @@ export class MainScene extends Phaser.Scene {
 
   preload() {
     Player.preload(this);
+    this.load.image('tiles', tilesImg);
+    this.load.tilemapTiledJSON('map', mapJson);
   }
 
   create() {
+    const map = this.make.tilemap({ key: 'map' });
+    const tileSet = map.addTilesetImage('RPG Nature Tileset', 'tiles', 32, 32);
+    map.createLayer('Tile Layer 1', tileSet, 0, 0);
+
+
     this.player = new Player({ scene: this, x: 0, y: 0, texture: "male", frame: 'townsfolk_m_idle_1' });
     this.player.inputKeys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
