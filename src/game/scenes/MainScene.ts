@@ -18,10 +18,12 @@ export class MainScene extends Phaser.Scene {
   create() {
     const map = this.make.tilemap({ key: 'map' });
     const tileSet = map.addTilesetImage('RPG Nature Tileset', 'tiles', 32, 32);
-    map.createLayer('Tile Layer 1', tileSet, 0, 0);
+    const layer1 = map.createLayer('Tile Layer 1', tileSet, 0, 0);
+    layer1.setCollisionByProperty({ collides: true });
+    this.matter.world.convertTilemapLayer(layer1);
 
 
-    this.player = new Player({ scene: this, x: 0, y: 0, texture: "male", frame: 'townsfolk_m_idle_1' });
+    this.player = new Player({ scene: this, x: 250, y: 250, texture: "male", frame: 'townsfolk_m_idle_1' });
     this.player.inputKeys = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       down: Phaser.Input.Keyboard.KeyCodes.S,
