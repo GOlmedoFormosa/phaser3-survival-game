@@ -41,6 +41,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
       friction: 0.35
     });
     this.setExistingBody(compoundBody as BodyType);
+    this.setFixedRotation();
   }
 
   static preload(scene: Phaser.Scene) {
