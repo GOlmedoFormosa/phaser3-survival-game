@@ -25,14 +25,18 @@ export interface IPlayerParams {
   frame: string
 }
 
+interface ICollision { matterCollision: { addOnCollideStart: Function } }
+
 export default class Player extends Phaser.Physics.Matter.Sprite implements IPlayer {
   inputKeys?: IKeys;
   spriteWeapon: Phaser.GameObjects.Sprite;
   weaponRotation: number;
+  touching: any[];
 
   constructor(data: IPlayerParams) {
     let { scene, x, y, texture, frame } = data;
     super(scene.matter.world, x, y, texture, frame);
+    this.touching = [];
     this.scene.add.existing(this);
     this.weaponRotation = 0;
     // Weapon
@@ -43,7 +47,9 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
 
     const Matter = (Phaser.Physics.Matter as Record<string, unknown>).Matter as typeof MatterJS;
     const { Body, Bodies } = Matter;
+    // green circle
     const playerCollider = Bodies.circle(this.x, this.x, 12, { isSensor: false, label: 'playerCollider' });
+    // blue circle
     const playerSensor = Bodies.circle(this.x, this.x, 24, { isSensor: true, label: 'playerSensor' });
     const compoundBody: any = Body.create({
       parts: [playerCollider, playerSensor],
@@ -51,6 +57,8 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
     });
     this.setExistingBody(compoundBody as BodyType);
     this.setFixedRotation();
+
+    this.createMiningCollition(playerSensor)
 
     // fix turn round
     this.scene.input.on('pointermove', (pointer: { worldX: number; }) => this.setFlip(pointer.worldX < this.x, false))
@@ -110,6 +118,20 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
       this.spriteWeapon.setAngle(this.weaponRotation);
     }
 
+  }
+
+  createMiningCollition(playerSensor: MatterJS.Body) {
+    console.log(this.scene)
+    const customScene = this.scene as Phaser.Scene & ICollision
+    customScene.matterCollision.addOnCollideStart({
+      objectA: [playerSensor],
+      callback: (other: any) => {
+        if (other.bodyB.isSensor) return;
+        this.touching.push(other.gameObjectB);
+        console.log(other.gameObjectB.name);
+      },
+      context: this.scene,
+    });
   }
 
   get velocity() {

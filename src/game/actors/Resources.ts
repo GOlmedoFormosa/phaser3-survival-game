@@ -17,6 +17,7 @@ export class Resource extends Phaser.Physics.Matter.Sprite {
     this.scene.add.existing(this);
 
     const yOrigin = resource.properties.find(({ name }: { name: string }) => name == 'yOrigin').value;
+    this.name = resource.type;
     let resX = resource.x || 0;
     let resY = resource.y || 0;
     resX += this.width / 2;
