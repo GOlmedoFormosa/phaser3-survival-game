@@ -2,6 +2,7 @@ import * as MatterJS from 'matter-js';
 import { BodyType } from 'matter';
 
 import maleImg from '../assets/male.png';
+import itemsImg from '../assets/items.png';
 import maleAtlasJson from '../assets/male_atlas.json';
 import maleAnimJson from '../assets/male_anim.json';
 
@@ -26,11 +27,19 @@ export interface IPlayerParams {
 
 export default class Player extends Phaser.Physics.Matter.Sprite implements IPlayer {
   inputKeys?: IKeys;
+  spriteWeapon: Phaser.GameObjects.Sprite;
+  weaponRotation: number;
 
   constructor(data: IPlayerParams) {
     let { scene, x, y, texture, frame } = data;
     super(scene.matter.world, x, y, texture, frame);
     this.scene.add.existing(this);
+    this.weaponRotation = 0;
+    // Weapon
+    this.spriteWeapon = new Phaser.GameObjects.Sprite(this.scene, 0, 0, 'items', 162);
+    this.spriteWeapon.setScale(0.8);
+    this.spriteWeapon.setOrigin(0.25, 0.75);
+    this.scene.add.existing(this.spriteWeapon);
 
     const Matter = (Phaser.Physics.Matter as Record<string, unknown>).Matter as typeof MatterJS;
     const { Body, Bodies } = Matter;
@@ -42,12 +51,18 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
     });
     this.setExistingBody(compoundBody as BodyType);
     this.setFixedRotation();
+
+    // fix turn round
+    this.scene.input.on('pointermove', (pointer: { worldX: number; }) => this.setFlip(pointer.worldX < this.x, false))
   }
 
   static preload(scene: Phaser.Scene) {
     scene.load.atlas('male', maleImg, maleAtlasJson);
     scene.load.animation('male_anim', maleAnimJson);
-
+    scene.load.spritesheet('items', itemsImg, {
+      frameWidth: 32,
+      frameHeight: 32
+    });
   }
 
   update() { // 60fps
@@ -73,6 +88,28 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
     } else {
       this.anims.play('male_idle', true);
     }
+    this.spriteWeapon.setPosition(this.x, this.y);
+    this.weaponRotate();
+  }
+
+  weaponRotate() {
+    const pointer = this.scene.input.activePointer;
+    if (pointer.isDown) {
+      this.weaponRotation += 6;
+    } else {
+      this.weaponRotation = 0;
+    }
+
+    if (this.weaponRotation > 100) {
+      this.weaponRotation = 0;
+    }
+
+    if (this.flipX) {
+      this.spriteWeapon.setAngle(-this.weaponRotation - 90);
+    } else {
+      this.spriteWeapon.setAngle(this.weaponRotation);
+    }
+
   }
 
   get velocity() {
