@@ -1,19 +1,8 @@
 import Phaser from 'phaser';
 import Player, { IPlayer, IKeys } from '../actors/Player';
 import tilesImg from '../assets/RPG Nature Tileset.png';
-import resourcesImg from '../assets/resources.png';
 import mapJson from '../assets/map.json';
-import resourcesJson from '../assets/resources_atlas.json';
-
-type TileSet = { [id: string]: { type: string } };
-type TileProperty = { [id: string]: { yOrigin: number } };
-type ResourcePropertyFromTileSet = {
-  [id: string]: {
-    id: string;
-    type: string;
-    yOrigin: number;
-  }
-}
+import { Resource } from '../actors/Resources';
 
 export class MainScene extends Phaser.Scene {
   player?: Phaser.Physics.Matter.Sprite & IPlayer;
@@ -24,9 +13,10 @@ export class MainScene extends Phaser.Scene {
 
   preload() {
     Player.preload(this);
+    Resource.preload(this);
+
     this.load.image('tiles', tilesImg);
     this.load.tilemapTiledJSON('map', mapJson);
-    this.load.atlas('resources', resourcesImg, resourcesJson);
   }
 
   create() {
@@ -50,23 +40,9 @@ export class MainScene extends Phaser.Scene {
   }
 
   addResources() {
-    const Matter = (Phaser.Physics.Matter as Record<string, unknown>).Matter as typeof MatterJS;
-    const { Bodies } = Matter;
-
     const resources = this.map?.getObjectLayer('Resources');
     resources?.objects.forEach((resource: Phaser.Types.Tilemaps.TiledObject) => {
-      let resX = resource.x || 0;
-      let resY = resource.y || 0;
-      const resourceItem = new Phaser.Physics.Matter.Sprite(this.matter.world, resX, resY, 'resources', resource.type);
-      const yOrigin = resource.properties.find(({ name }: { name: string }) => name == 'yOrigin').value;
-      resX += resourceItem.width / 2;
-      resY -= resourceItem.height / 2;
-      resY = resY + resourceItem.height * (yOrigin - 0.5);
-      const circleCollider = Bodies.circle(resX, resY, 12, { isSensor: false, label: 'collider' });
-      resourceItem.setExistingBody(circleCollider)
-      resourceItem.setStatic(true);
-      resourceItem.setOrigin(0.5, yOrigin);
-      this.add.existing(resourceItem);
+      new Resource({ scene: this, resource });
     })
   }
 
