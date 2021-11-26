@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import Player, { IPlayer, IKeys } from '../actors/Player';
 import tilesImg from '../assets/RPG Nature Tileset.png';
 import mapJson from '../assets/map.json';
-import { Resource } from '../actors/Resources';
+import { Resource } from '../actors/Resource';
 
 export class MainScene extends Phaser.Scene {
   player?: Phaser.Physics.Matter.Sprite & IPlayer;

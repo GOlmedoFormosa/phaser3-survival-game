@@ -109,6 +109,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
     }
 
     if (this.weaponRotation > 100) {
+      this.whackStuff();
       this.weaponRotation = 0;
     }
 
@@ -128,7 +129,6 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
       callback: (other: any) => {
         if (other.bodyB.isSensor) return;
         this.touching.push(other.gameObjectB);
-        console.log(other.gameObjectB.name);
       },
       context: this.scene,
     });
@@ -136,6 +136,16 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
       objectA: [playerSensor],
       callback: (other: any) => {
         this.touching = this.touching.filter(gameObject => gameObject !== other.gameObjectB)
+      }
+    })
+  }
+
+  whackStuff() {
+    this.touching = this.touching.filter(gameObject => gameObject.hit && !gameObject.dead);
+    this.touching.forEach(gameObject => {
+      gameObject.hit();
+      if (gameObject.dead) {
+        gameObject.destroy();
       }
     })
   }
