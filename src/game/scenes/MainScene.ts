@@ -54,29 +54,11 @@ export class MainScene extends Phaser.Scene {
     const { Bodies } = Matter;
 
     const resources = this.map?.getObjectLayer('Resources');
-    const tileSet = this.map?.getTileset('RPG Nature Tileset');
-    let resourceProperties: ResourcePropertyFromTileSet = {};
-    if (tileSet?.tileData) {
-      const collection: TileSet = tileSet?.tileData as TileSet;
-      const properties: TileProperty = tileSet?.tileProperties as TileProperty;
-      for (let id in collection) {
-        if ('type' in collection[id]) {
-          const { type } = collection[id]
-          console.log(tileSet?.tileProperties)
-          resourceProperties[String(type)] = {
-            id,
-            type: String(type),
-            yOrigin: properties[String(id)].yOrigin
-          }
-        }
-      }
-    }
-
     resources?.objects.forEach((resource: Phaser.Types.Tilemaps.TiledObject) => {
       let resX = resource.x || 0;
       let resY = resource.y || 0;
       const resourceItem = new Phaser.Physics.Matter.Sprite(this.matter.world, resX, resY, 'resources', resource.type);
-      const yOrigin = resourceProperties[resource.type].yOrigin
+      const yOrigin = resource.properties.find(({ name }: { name: string }) => name == 'yOrigin').value;
       resX += resourceItem.width / 2;
       resY -= resourceItem.height / 2;
       resY = resY + resourceItem.height * (yOrigin - 0.5);
