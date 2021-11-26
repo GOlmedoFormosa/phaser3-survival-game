@@ -5,6 +5,16 @@ import resourcesImg from '../assets/resources.png';
 import mapJson from '../assets/map.json';
 import resourcesJson from '../assets/resources_atlas.json';
 
+type TileSet = { [id: string]: { type: string } };
+type TileProperty = { [id: string]: { yOrigin: number } };
+type ResourcePropertyFromTileSet = {
+  [id: string]: {
+    id: string;
+    type: string;
+    yOrigin: number;
+  }
+}
+
 export class MainScene extends Phaser.Scene {
   player?: Phaser.Physics.Matter.Sprite & IPlayer;
   map?: Phaser.Tilemaps.Tilemap;
@@ -40,11 +50,40 @@ export class MainScene extends Phaser.Scene {
   }
 
   addResources() {
+    const Matter = (Phaser.Physics.Matter as Record<string, unknown>).Matter as typeof MatterJS;
+    const { Bodies } = Matter;
+
     const resources = this.map?.getObjectLayer('Resources');
-    resources?.objects.forEach(resource => {
-      console.log('res', resource)
-      const resourceItem = new Phaser.Physics.Matter.Sprite(this.matter.world, resource.x || 0, resource.y || 0, 'resources', resource.type);
+    const tileSet = this.map?.getTileset('RPG Nature Tileset');
+    let resourceProperties: ResourcePropertyFromTileSet = {};
+    if (tileSet?.tileData) {
+      const collection: TileSet = tileSet?.tileData as TileSet;
+      const properties: TileProperty = tileSet?.tileProperties as TileProperty;
+      for (let id in collection) {
+        if ('type' in collection[id]) {
+          const { type } = collection[id]
+          console.log(tileSet?.tileProperties)
+          resourceProperties[String(type)] = {
+            id,
+            type: String(type),
+            yOrigin: properties[String(id)].yOrigin
+          }
+        }
+      }
+    }
+
+    resources?.objects.forEach((resource: Phaser.Types.Tilemaps.TiledObject) => {
+      let resX = resource.x || 0;
+      let resY = resource.y || 0;
+      const resourceItem = new Phaser.Physics.Matter.Sprite(this.matter.world, resX, resY, 'resources', resource.type);
+      const yOrigin = resourceProperties[resource.type].yOrigin
+      resX += resourceItem.width / 2;
+      resY -= resourceItem.height / 2;
+      resY = resY + resourceItem.height * (yOrigin - 0.5);
+      const circleCollider = Bodies.circle(resX, resY, 12, { isSensor: false, label: 'collider' });
+      resourceItem.setExistingBody(circleCollider)
       resourceItem.setStatic(true);
+      resourceItem.setOrigin(0.5, yOrigin);
       this.add.existing(resourceItem);
     })
   }
