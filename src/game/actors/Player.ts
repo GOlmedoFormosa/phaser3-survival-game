@@ -25,7 +25,7 @@ export interface IPlayerParams {
   frame: string
 }
 
-interface ICollision { matterCollision: { addOnCollideStart: Function } }
+interface ICollision { matterCollision: { addOnCollideStart: Function, addOnCollideEnd: Function } }
 
 export default class Player extends Phaser.Physics.Matter.Sprite implements IPlayer {
   inputKeys?: IKeys;
@@ -122,7 +122,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
 
   createMiningCollition(playerSensor: MatterJS.Body) {
     console.log(this.scene)
-    const customScene = this.scene as Phaser.Scene & ICollision
+    const customScene = this.scene as Phaser.Scene & ICollision;
     customScene.matterCollision.addOnCollideStart({
       objectA: [playerSensor],
       callback: (other: any) => {
@@ -132,6 +132,12 @@ export default class Player extends Phaser.Physics.Matter.Sprite implements IPla
       },
       context: this.scene,
     });
+    customScene.matterCollision.addOnCollideEnd({
+      objectA: [playerSensor],
+      callback: (other: any) => {
+        this.touching = this.touching.filter(gameObject => gameObject !== other.gameObjectB)
+      }
+    })
   }
 
   get velocity() {
