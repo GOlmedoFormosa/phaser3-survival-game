@@ -22,7 +22,7 @@ server by running `yarn dev`. The first time you run this you should see the fol
 After starting the development server with `yarn build`, you can edit any files in the `src` folder
 and Webpack will automatically recompile and reload your assets.
 
-## Configuring Rollup
+## Configuring Webpack
 
 - Edit the file `webpack.config.js` to edit the development build.
 
